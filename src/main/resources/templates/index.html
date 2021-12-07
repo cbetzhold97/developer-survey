@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Rangers Developer Technical Survey</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css"
+	href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+	crossorigin="anonymous">
+<style>
+body {
+	padding: 0px;
+	background: #fff;
+	color: #333;
+	margin: 0 auto;
+	font: 1em/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.teamLogo {
+display: none;
+}
+
+header {
+	background: #171e2e;
+	padding: .5em 3em;
+	color: #fff;
+	line-height: 1;
+	height:8rem;
+}
+img{
+max-width:100px;
+height:auto;
+}
+#ws10{
+float:left;
+
+margin-right: 10 px;
+}
+#headerTitle{
+float: left;
+margin-left:15px;
+}
+
+
+#page-container {
+	position: relative;
+	min-height: 100vh;
+}
+
+#content-wrap {
+	padding-bottom: 2.5rem; /* Footer height */
+}
+
+#home{ 
+margin-top: 30px;
+text-align:center;
+    position: absolute;
+    top: 30%;
+    left: 25%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%)
+ } 
+#away{
+margin-top: 30px;
+text-align:center;
+    position: absolute;
+    top: 30%;
+    right: 25%;
+    margin-left: -50%;
+    transform: translate(-50%, -50%)
+ } 
+ 
+#location{
+margin: 0;
+text-align:center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%)
+}
+#playsTable{
+margin:2em;
+}
+
+footer {
+	background: #333;
+	color: #fff;
+	padding: .1em 3em;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	text-align: center;
+	height: 2.5rem;
+}
+</style>
+</head>
+<body>
+	<div id="page-container">
+		<header>
+		<img id="ws10" src="https://upload.wikimedia.org/wikipedia/en/6/63/2010_World_Series_logo.svg">
+		<div id="headerTitle">
+		<h1>2010 World Series</h1>
+			<select name="dates" id="dateSelect" onchange="loadPlays()"></select>
+		</div>
+			
+		</header>
+		<div id="content-wrap">
+			<nav>
+				<div class="nav nav-tabs" id="nav-tab" role="tablist">
+				<button class="nav-link active" id="nav-location-tab" data-bs-toggle="tab"
+						data-bs-target="#nav-location" type="button" role="tab"
+						aria-controls="nav-location" aria-selected="true">Game
+						Info</button>
+					<button class="nav-link" id="nav-plays-tab"
+						data-bs-toggle="tab" data-bs-target="#nav-plays" type="button"
+						role="tab" aria-controls="nav-plays" aria-selected="false">Play
+						by Play</button>
+					
+				</div>
+			</nav>
+
+			<div>
+				<input type="hidden" th:id="dates" th:value="${dates}" />
+			</div>
+			<div class="tab-content" id="nav-tabContent">
+				<div class="tab-pane fade show active" id="nav-location" role="tabpanel"
+					aria-labelledby="nav-location-tab">
+					<div id="gameInfo">
+						<div id="home">
+							<img id="texHome" class="teamLogo" src="https://logos-world.net/wp-content/uploads/2020/05/Texas-Rangers-Logo.png">
+							<img id="sfHome" class="teamLogo" src="http://baseballstrength.org/wp-content/uploads/2016/09/giants-logo-1024x565-720x405.png">
+							<h4 id="homeTeam"></h4>
+							<h4 id="homeScore"></h4>
+						</div>
+						<div id="away">
+						<img id="texAway"class="teamLogo" src="https://logos-world.net/wp-content/uploads/2020/05/Texas-Rangers-Logo.png">
+						<img id="sfAway" class="teamLogo" src="http://baseballstrength.org/wp-content/uploads/2016/09/giants-logo-1024x565-720x405.png">
+							<h4 id="awayTeam"></h4>
+							<h4 id="awayScore"></h4>
+						</div>
+						<div id="location">
+						<h5 id="divVenue"></h5>
+						<h5 id="divWeather"></h5>
+						<h5 id="divWind"></h5>
+						</div>						
+					</div>
+				</div>
+				<div class="tab-pane fade" id="nav-plays"
+					role="tabpanel" aria-labelledby="nav-plays-tab">
+					<div id="tableDiv">
+						<table id="playsTable"></table>
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<footer class="page-footer font-small">
+			<div class="text-center">2021: Claire
+				Betzhold</div>
+		</footer>
+	</div>
+	<script type="text/javascript"
+		src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" charset="utf8"
+		src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+
+	<script>
+		configureDateSelection();
+		loadPlays();
+
+		$(document).ready(function() {
+			$('#playsTable').DataTable({
+				title : "Plays",
+				pageLength : 100,
+				columns : [ {
+					"title" : "Inning",
+					"data" : "inning"
+				}, {
+					"title" : "Top/Bottom",
+					"data" : "topbot"
+				}, {
+					"title" : "Description",
+					"data" : "des"
+				}, {
+					"title" : "Home Score",
+					"data" : "home_score"
+				}, {
+					"title" : "Away Score",
+					"data" : "away_score"
+				}
+
+				]
+			});
+		});
+		function configureDateSelection() {
+			var dateSel = new Array();
+			var date = document.querySelector("#dateSelect");
+
+			var dates = JSON.parse(document.querySelector("#dates").value);
+			for (var i = 0; i < dates.length; i++) {
+				var opt = document.createElement('option');
+				opt.value = dates[i];
+				var count = i + 1;
+				opt.innerHTML = dates[i] + ": Game " + count;
+				date.appendChild(opt);
+			}
+			$(date).attr("setvalue", dates[0]);
+		}
+		function configureGameInfo(plays) {
+			var divHTeam = document.getElementById('homeTeam');
+			divHTeam.innerHTML = plays[0].home_team;			
+			var divHScore = document.getElementById('homeScore');
+			divHScore.innerHTML = plays[plays.length - 1].home_score;
+			var divATeam = document.getElementById('awayTeam');
+			divATeam.innerHTML = plays[0].away_team;
+			var divAScore = document.getElementById('awayScore');
+			divAScore.innerHTML = plays[plays.length - 1].away_score;
+
+			var divVenue = document.getElementById('divVenue');
+			divVenue.innerHTML = plays[0].venue;
+
+			var divWeather = document.getElementById('divWeather');
+			divWeather.innerHTML = plays[0].temp + "&deg;F "
+					+ plays[0].condition;
+
+			var divWind = document.getElementById('divWind');
+			divWind.innerHTML = "Wind: " + plays[0].wind;
+			
+			if(plays[0].home_team == "TEX"){
+				document.getElementById('sfHome').style.display= "none";
+				document.getElementById("texAway").style.display="none";
+				document.getElementById('texHome').style.display= "block";
+				document.getElementById("sfAway").style.display="block";
+			}else{
+				document.getElementById('texHome').style.display= "none";
+				document.getElementById("sfAway").style.display="none";
+				document.getElementById('sfHome').style.display= "block";
+				document.getElementById("texAway").style.display="block";
+			}
+
+		}
+		function configureTable(plays) {
+			$('#playsTable').DataTable().clear().draw();
+			$('#playsTable').dataTable().fnAddData(plays);
+		}
+
+		function createTable() {
+			var playTable = document.querySelector("#playsTable");
+			if (playTable != undefined && playTable != null) {
+				playTable.remove();
+			}
+
+			var tblDiv = document.querySelector("#tableDiv");
+
+			playTable = document.createElement("table");
+			$(playTable).attr("id", "playTable")
+			tblDiv.appendChild(playTable);
+
+		}
+		function loadPlays() {
+			var date = document.querySelector("#dateSelect").value;
+			getPlays(date);
+
+		}
+		function getPlays(date) {
+			$.ajax({
+				type : "GET",
+				url : "/plays/" + date,
+				success : function(data) {
+					configureTable(data);
+					configureGameInfo(data);
+				},
+				error : function(error) {
+					console.log(error);
+				}
+			});
+		}
+	</script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+		crossorigin="anonymous"></script>
+</body>
+</html>
